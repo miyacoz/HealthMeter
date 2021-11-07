@@ -3,13 +3,19 @@ const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
 const { spawn } = require('child_process')
 
-const decimal = (value, digits = 2) => Math.floor(value * Math.pow(10, digits)) / Math.pow(10, digits)
+const decimal = value => {
+  let digits = 2
+  if (value > 100) {
+    digits = 0
+  } else if (value > 10) {
+    digits = 1
+  }
 
-const round = kb => {
-  let value = kb
+  return Math.floor(value * Math.pow(10, digits)) / Math.pow(10, digits)
+}
+
+const round = value => {
   let unit = 'kb'
-  let mb = 0
-  let gb = 0
 
   if (value / 1024 >= 1) {
     value /= 1024
@@ -21,15 +27,7 @@ const round = kb => {
     }
   }
 
-  if (value > 100) {
-    value = decimal(value, 0)
-  } else if (value > 10) {
-    value = decimal(value, 1)
-  } else {
-    value = decimal(value)
-  }
-
-  return { value, unit }
+  return { value: decimal(value), unit }
 }
 
 (async () => {
