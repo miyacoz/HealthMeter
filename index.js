@@ -3,7 +3,7 @@ const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
 const { spawn } = require('child_process')
 
-const decimal = value => {
+const round = value => {
   let digits = 2
   if (value > 100) {
     digits = 0
@@ -14,7 +14,7 @@ const decimal = value => {
   return Math.floor(value * Math.pow(10, digits)) / Math.pow(10, digits)
 }
 
-const round = value => {
+const convertUnit = value => {
   let unit = 'kb'
 
   if (value / 1024 >= 1) {
@@ -27,7 +27,7 @@ const round = value => {
     }
   }
 
-  return { value: decimal(value), unit }
+  return { value: round(value), unit }
 }
 
 (async () => {
@@ -68,11 +68,11 @@ const round = value => {
       .map(v => parseFloat(v, 10))
 
     console.log(
-      round(parsed.memtotal),
-      round(memoryUsed),
+      convertUnit(parsed.memtotal),
+      convertUnit(memoryUsed),
       memoryUsePercent,
-      round(parsed.swaptotal),
-      round(swapUsed),
+      convertUnit(parsed.swaptotal),
+      convertUnit(swapUsed),
       swapUsePercent,
       loadAverage
     )
