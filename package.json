@@ -1,0 +1,8 @@
+{
+  "name": "HealthMeter",
+  "version": "0.1.0",
+  "repository": "https://github.com/miyacoz/HeartMeter.git",
+  "author": "miyacoz <z@zeppel.biz>",
+  "license": "MIT",
+  "private": true
+}
