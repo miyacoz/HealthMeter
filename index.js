@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
+const { spawn } = require('child_process')
 
 const decimal = (value, digits = 2) => Math.floor(value * Math.pow(10, digits)) / Math.pow(10, digits)
 
@@ -55,13 +56,27 @@ const round = kb => {
     let memoryUsed = parsed.memtotal - parsed.memavailable
     let swapUsed = parsed.swaptotal - parsed.swapfree
 
+    const askLoadAverage = () => new Promise((s, j) => {
+      const uptime = spawn('uptime')
+      uptime.stdout.on('data', data => s(data))
+      uptime.stderr.on('data', data => j(data))
+      uptime.on('close', code => s(code))
+    })
+
+    const uptimeResult = String(await askLoadAverage())
+    const loadAverage = uptimeResult
+      .replace(/.*load average:/i, '')
+      .split(',')
+      .map(v => parseFloat(v, 10))
+
     console.log(
       round(parsed.memtotal),
       round(memoryUsed),
       memoryUsePercent,
       round(parsed.swaptotal),
       round(swapUsed),
-      swapUsePercent
+      swapUsePercent,
+      loadAverage
     )
     exit(0)
   } catch (e) {
