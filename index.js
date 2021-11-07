@@ -40,8 +40,7 @@ const spawn = command => new Promise((s, j) => {
 ;(async () => {
   try {
     /* memory */
-    const meminfo = await readFile('/proc/meminfo', { encoding: 'utf8' })
-    const lines = meminfo
+    const lines = (await readFile('/proc/meminfo', { encoding: 'utf8' }))
       .split('\n')
       .filter(l => /memtotal|memavailable|swaptotal|swapfree/i.test(l))
 
@@ -49,29 +48,27 @@ const spawn = command => new Promise((s, j) => {
       throw new Error(`Number of retreated lines from proc meminfo is not 4: ${lines.length}`)
     }
 
-    const parsed = {}
+    const parsedMeminfo = {}
     lines
       .map(l => l.toLowerCase().split(':'))
       .forEach(([title, value]) => {
-        parsed[title] = parseInt(value.trim().split(' ')[0], 10)
+        parsedMeminfo[title] = parseInt(value.trim().split(' ')[0], 10)
       })
 
-    const memoryUsePercent = Math.ceil(100 - (parsed.memavailable * 100 / parsed.memtotal))
-    const swapUsePercent = Math.ceil(100 - (parsed.swapfree * 100 / parsed.swaptotal))
+    const memoryUsePercent = Math.ceil(100 - (parsedMeminfo.memavailable * 100 / parsedMeminfo.memtotal))
+    const swapUsePercent = Math.ceil(100 - (parsedMeminfo.swapfree * 100 / parsedMeminfo.swaptotal))
 
-    let memoryUsed = parsed.memtotal - parsed.memavailable
-    let swapUsed = parsed.swaptotal - parsed.swapfree
+    let memoryUsed = parsedMeminfo.memtotal - parsedMeminfo.memavailable
+    let swapUsed = parsedMeminfo.swaptotal - parsedMeminfo.swapfree
 
     /* cpu */
-    const uptimeResult = await spawn('uptime')
-    const loadAverage = uptimeResult
+    const loadAverage = (await spawn('uptime'))
       .replace(/.*load average:/i, '')
       .split(',')
       .map(v => parseFloat(v, 10))
 
     /* disk */
-    const dfResult = await spawn('df')
-    const { total: diskTotal, used: diskUsed } = dfResult
+    const { total: diskTotal, used: diskUsed } = (await spawn('df'))
       .trim()
       .split('\n')
       .filter((l, i) => i !== 0)
@@ -83,10 +80,10 @@ const spawn = command => new Promise((s, j) => {
     const diskUsePercent = Math.ceil(diskUsed * 100 / diskTotal)
 
     console.log(
-      convertUnit(parsed.memtotal),
+      convertUnit(parsedMeminfo.memtotal),
       convertUnit(memoryUsed),
       memoryUsePercent,
-      convertUnit(parsed.swaptotal),
+      convertUnit(parsedMeminfo.swaptotal),
       convertUnit(swapUsed),
       swapUsePercent,
       loadAverage,
