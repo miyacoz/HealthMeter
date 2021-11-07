@@ -4,5 +4,8 @@
   "repository": "https://github.com/miyacoz/HeartMeter.git",
   "author": "miyacoz <z@zeppel.biz>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "dotenv": "^10.0.0"
+  }
 }
