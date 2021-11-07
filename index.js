@@ -1,7 +1,7 @@
 require('dotenv').config()
 const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
-const { spawn } = require('child_process')
+const { spawn: nonPromiseSpawn } = require('child_process')
 
 const round = value => {
   let digits = 2
@@ -30,7 +30,14 @@ const convertUnit = value => {
   return { value: round(value), unit }
 }
 
-(async () => {
+const spawn = command => new Promise((s, j) => {
+  const child = nonPromiseSpawn(command)
+  child.stdout.on('data', data => s(String(data)))
+  child.stderr.on('data', data => j(String(data)))
+  child.on('close', code => s(String(code)))
+})
+
+;(async () => {
   try {
     /* memory */
     const meminfo = await readFile('/proc/meminfo', { encoding: 'utf8' })
@@ -56,28 +63,14 @@ const convertUnit = value => {
     let swapUsed = parsed.swaptotal - parsed.swapfree
 
     /* cpu */
-    const askLoadAverage = () => new Promise((s, j) => {
-      const uptime = spawn('uptime')
-      uptime.stdout.on('data', data => s(data))
-      uptime.stderr.on('data', data => j(data))
-      uptime.on('close', code => s(code))
-    })
-
-    const uptimeResult = String(await askLoadAverage())
+    const uptimeResult = await spawn('uptime')
     const loadAverage = uptimeResult
       .replace(/.*load average:/i, '')
       .split(',')
       .map(v => parseFloat(v, 10))
 
     /* disk */
-    const askDiskUsage = () => new Promise((s, j) => {
-      const df = spawn('df')
-      df.stdout.on('data', data => s(data))
-      df.stderr.on('data', data => j(data))
-      df.on('close', code => s(code))
-    })
-
-    const dfResult = String(await askDiskUsage())
+    const dfResult = await spawn('df')
     const { total: diskTotal, used: diskUsed } = dfResult
       .trim()
       .split('\n')
