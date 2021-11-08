@@ -3,7 +3,7 @@ const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
 const { post } = require('axios')
 const { format } = require('date-fns')
-const { getBytesString, spawn } = require('./lib.js')
+const { getBytesString: bytes, spawn } = require('./lib.js')
 
 ;(async () => {
   try {
@@ -47,12 +47,14 @@ const { getBytesString, spawn } = require('./lib.js')
       .reduce(({ total, used }, [currentTotal, currentUsed]) => ({ total: total + currentTotal, used: used + currentUsed }), { total: 0, used: 0 })
     const diskUsePercent = Math.ceil(diskUsed * 100 / diskTotal)
 
+    const formatUsage = (title, percent, used, total) => `${title} Used: \`${percent} %\` (\`${used}\`/\`${total}\`)`
+
     const content = [
       `> ${format(new Date(), "yyyy-MM-dd HH:mm:ss 'UTC'")}`,
       `Load Average: ${loadAverage.map(v => `\`${v}\``).join(', ')}`,
-      `Memory Used: \`${memoryUsePercent} %\` (\`${getBytesString(memoryUsed)}\`/\`${getBytesString(parsedMeminfo.memtotal)}\`)`,
-      `Swap Used: \`${swapUsePercent} %\` (\`${getBytesString(swapUsed)}\`/\`${getBytesString(parsedMeminfo.swaptotal)}\`)`,
-      `Disk Used: \`${diskUsePercent} %\` (\`${getBytesString(diskUsed)}\`/\`${getBytesString(diskTotal)}\`)`,
+      formatUsage('Memory', memoryUsePercent, bytes(memoryUsed), bytes(parsedMeminfo.memtotal)),
+      formatUsage('Swap', swapUsePercent, bytes(swapUsed), bytes(parsedMeminfo.swaptotal)),
+      formatUsage('Disk', diskUsePercent, bytes(diskUsed), bytes(diskTotal)),
     ].join('\n')
 
     const postResult = await post(env.WEBHOOK_URL, { content })
