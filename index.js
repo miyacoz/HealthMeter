@@ -2,10 +2,10 @@ require('dotenv').config()
 const { readFile } = require('fs/promises')
 const { env, exit } = require('process')
 const { post } = require('axios')
-const { format } = require('date-fns')
+const { format, getTime } = require('date-fns')
 const { getBytesString: bytes, spawn } = require('./lib.js')
 
-;(async () => {
+const main = async () => {
   try {
     /* memory */
     const lines = (await readFile('/proc/meminfo', { encoding: 'utf8' }))
@@ -58,10 +58,14 @@ const { getBytesString: bytes, spawn } = require('./lib.js')
     ].join('\n')
 
     const postResult = await post(env.WEBHOOK_URL, { content })
-
-    exit(0)
   } catch (e) {
     console.warn(e)
-    exit(127)
   }
-})()
+
+  const now = new Date()
+  const next = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getHours() + 1, 0, 0)
+  const timeout = getTime(next) - getTime(now)
+  setTimeout(() => main(), timeout)
+}
+
+main()

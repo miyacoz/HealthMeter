@@ -5,6 +5,10 @@
   "author": "miyacoz <z@zeppel.biz>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "start": "nohup node index.js & echo $! > pid",
+    "stop": "PID=$(cat pid) && kill $PID && rm pid || echo 'Error: pid file not found. is it really running?'"
+  },
   "dependencies": {
     "axios": "^0.24.0",
     "date-fns": "^2.25.0",
