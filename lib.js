@@ -27,6 +27,11 @@ const convertUnit = value => {
   return { value: round(value), unit }
 }
 
+const getBytesString = value => {
+  const converted = convertUnit(value)
+  return `${converted.value} ${converted.unit.toUpperCase()}`
+}
+
 const spawn = command => new Promise((s, j) => {
   const child = nonPromiseSpawn(command)
   child.stdout.on('data', data => s(String(data)))
@@ -35,6 +40,6 @@ const spawn = command => new Promise((s, j) => {
 })
 
 module.exports = {
-  convertUnit,
+  getBytesString,
   spawn,
 }
