@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "nohup node index.js & echo $! > pid",
-    "stop": "PID=$(cat pid) && kill $PID && rm pid || echo 'Error: pid file not found. is it really running?'"
+    "stop": "PID=$(cat pid) && kill $PID && rm pid || echo 'Error: pid file or process not found. is it really running?'"
   },
   "dependencies": {
     "axios": "^0.24.0",
