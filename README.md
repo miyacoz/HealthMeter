@@ -12,6 +12,11 @@ Is just a small shouter to inform me on Discord whether my servers are still ali
 
 # usage
 
+## requirement
+
+- node >= 14.0.0
+  - cf.: https://nodejs.org/api/fs.html#fs_promises_api
+
 ## preparation
 
 - install `node` and `yarn`
